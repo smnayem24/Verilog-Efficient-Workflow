@@ -51,36 +51,36 @@
 
 ```
 project/
-├── rtl/                  # RTL code (.v/.sv files)
-│   ├── src/             # Source RTL modules
-│   └── packages/        # Shared packages & interfaces
-├── tb/                  # Testbenches
+├── rtl/                # RTL code (.v/.sv files)
+│   ├── src/            # Source RTL modules
+│   └── packages/       # Shared packages & interfaces
+├── tb/                 # Testbenches
 │   ├── unit/           # Unit test benches
 │   └── integration/    # Integration tests
 ├── scripts/            # TCL/Python automation
-│   ├── tcl/           # Vivado TCL scripts
-│   └── python/        # Test generators & utilities
+│   ├── tcl/            # Vivado TCL scripts
+│   └── python/         # Test generators & utilities
 ├── constraints/        # Timing & pin constraints
-├── docs/              # Documentation
-├── waveforms/         # Simulation outputs
-└── vivado/            # Vivado project files
+├── docs/               # Documentation
+├── waveforms/          # Simulation outputs
+└── vivado/             # Vivado project files
 ```
 
 ### `Or`
 
 ```
 project/
-├── rtl/                  # RTL code (.v/.sv files)
-│   ├── project.v         # Source RTL modules   
-├── tb/                   # Testbenches
-│   ├── tb_project.v      # Unit test benches
+├── rtl/                # RTL code (.v/.sv files)
+│   ├── project.v       # Source RTL modules   
+├── tb/                 # Testbenches
+│   ├── tb_project.v    # Unit test benches
 ├── scripts/            # TCL/Python automation
-│   ├── tcl/           # Vivado TCL scripts
-│   └── python/        # Test generators & utilities
+│   ├── tcl/            # Vivado TCL scripts
+│   └── python/         # Test generators & utilities
 ├── constraints/        # Timing & pin constraints
-├── docs/              # Documentation
-├── waveforms/         # Simulation outputs
-└── vivado/            # Vivado project files
+├── docs/               # Documentation
+├── waveforms/          # Simulation outputs
+└── vivado/             # Vivado project files
 ```
 
 ## 🔄 Workflow Steps
