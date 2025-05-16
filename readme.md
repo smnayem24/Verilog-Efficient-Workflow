@@ -2,6 +2,8 @@
 
 ### Optimized for VS Code + Vivado
 
+> A modern development workflow for FPGA design using VS Code and Vivado, emphasizing productivity and code quality.
+
 ---
 
 ## 📌 Table of Contents
@@ -11,7 +13,9 @@
 3. [Workflow Steps](#-workflow-steps)
 4. [TCL Automation](#-tcl-automation)
 5. [Example Project](#-example-project)
-6. [FAQ](#-faq)
+6. [Dependencies](#-dependencies)
+7. [FAQ](#-faq)
+8. [Contributing](#-contributing)
 
 ---
 
@@ -24,49 +28,74 @@
 | Verilog-HDL/SystemVerilog | Syntax highlighting, linting | [Marketplace](https://marketplace.visualstudio.com/items?itemName=mshr-h.veriloghdl)     |
 | Todo Tree                 | Track TODOs/FIXMEs           | [Marketplace](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree) |
 | Verible                   | Linting (Google style)       | [Marketplace](https://marketplace.visualstudio.com/items?itemName=mshr-h.verible)        |
+| GitLens                   | Git integration & history    | [Marketplace](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)       |
 
 ### **External Tools**
 
-- **Icarus Verilog**: Quick RTL checks
+- **Icarus Verilog**: Quick RTL verification
   ```bash
-  sudo apt install iverilog gtkwave  # Linux
-  Vivado: Simulation/Synthesis
+  # Linux
+  sudo apt install iverilog gtkwave
+  
+  # Windows (using Package Manager)
+  winget install icarus-verilog
+  winget install gtkwave
   ```
 
-📂 Project Structure
-plaintext
-project/  
-├── rtl/ # RTL code (.v/.sv)  
-├── tb/ # Testbenches  
-├── scripts/ # TCL/Python scripts  
-├── waveforms/ # Simulation outputs  
-└── vivado/ # Vivado project files  
-🔄 Workflow Steps
+- **Vivado**: Full FPGA development suite
+  - Download from [Xilinx Website](https://www.xilinx.com/support/download.html)
+  - Ensure it's added to system PATH
 
-1. Develop in VS Code
-   Write RTL/testbench with linting support.
+## 📂 Project Structure
 
-Use // TODO: tags (tracked by Todo Tree).
+```
+project/
+├── rtl/                  # RTL code (.v/.sv files)
+│   ├── src/             # Source RTL modules
+│   └── packages/        # Shared packages & interfaces
+├── tb/                  # Testbenches
+│   ├── unit/           # Unit test benches
+│   └── integration/    # Integration tests
+├── scripts/            # TCL/Python automation
+│   ├── tcl/           # Vivado TCL scripts
+│   └── python/        # Test generators & utilities
+├── constraints/        # Timing & pin constraints
+├── docs/              # Documentation
+├── waveforms/         # Simulation outputs
+└── vivado/            # Vivado project files
+```
 
-2. Pre-Simulate with Icarus
-   bash
-   iverilog -o sim.out -g2012 tb/testbench.sv rtl/design.sv
-   vvp sim.out
-   gtkwave waveforms/dump.vcd
-3. Simulate in Vivado
-   Refresh Vivado project after editing files in VS Code.
+## 🔄 Workflow Steps
 
-Run behavioral simulation.
+### 1. Development (VS Code)
+- Write RTL/testbench with real-time linting
+- Use organized TODO tags:
+  ```verilog
+  // TODO(feature): Add overflow detection
+  // TODO(optimize): Pipeline this stage
+  // TODO(bug): Fix timing violation
+  ```
 
-4. Debug & Fix
-   Check waveforms in Vivado.
+### 2. Pre-Synthesis Verification
+```bash
+# Run Icarus simulation
+iverilog -o sim.out -g2012 tb/testbench.sv rtl/design.sv
+vvp sim.out
+gtkwave waveforms/dump.vcd
+```
 
-Fix errors in VS Code using linting hints.
+### 3. Vivado Integration
+1. Refresh project in Vivado
+2. Run behavioral simulation
+3. Check timing constraints
+4. Run synthesis & implementation
 
-5. Synthesize (Optional)
-   Run synthesis/implementation in Vivado.
+### 4. Debug & Verification
+- Analyze waveforms in Vivado/GTKWave
+- Check timing reports
+- Verify against requirements
 
-⚙️ TCL Automation
+## ⚙️ TCL Automation
 Run TCL Scripts in Vivado
 Method 1: Command Line
 bash
@@ -83,67 +112,91 @@ add_files {rtl/design.sv}
 add_files -fileset sim_1 {tb/testbench.sv}
 set_property top testbench [get_filesets sim_1]
 launch_simulation # Optional
-📦 Example Project
-8-Bit Adder
-RTL: rtl/adder_8bit.sv
+📦 Example Project: 8-Bit Adder
 
-verilog
-module adder_8bit (input [7:0] a, b, output [7:0] sum, output carry);
-assign {carry, sum} = a + b;
+### RTL Implementation (`rtl/adder_8bit.sv`)
+```verilog
+module adder_8bit (
+    input  logic [7:0] a,
+    input  logic [7:0] b,
+    output logic [7:0] sum,
+    output logic       carry
+);
+    assign {carry, sum} = a + b;
 endmodule
-Testbench: tb/tb_adder.sv
+```
 
-verilog
+### Testbench (`tb/tb_adder.sv`)
+```verilog
 module tb_adder;
-logic [7:0] a, b, sum;
-logic carry;
-adder_8bit dut (.\*);
+    logic [7:0] a, b, sum;
+    logic carry;
+    
+    // DUT instantiation
+    adder_8bit dut (.*);
 
+    // Test stimulus
     initial begin
         $dumpfile("waveforms/tb_adder.vcd");
         $dumpvars(0, tb_adder);
+        
+        // Test cases
         a = 8'h01; b = 8'h02; #10;
+        assert(sum == 8'h03) else $error("Test 1 failed");
+        
+        a = 8'hFF; b = 8'h01; #10;
+        assert({carry, sum} == 9'h100) else $error("Test 2 failed");
+        
         $finish;
     end
-
 endmodule
-❓ FAQ
-Q: How to debug Vivado errors?
-A:
+```
 
-Check the TCL Console for detailed logs.
+## ❓ FAQ
 
-Verify file paths in TCL scripts.
+### Q: How to debug Vivado errors?
+- Check the TCL Console for detailed logs
+- Verify file paths in TCL scripts
+- Enable verbose logging with `set_msg_config -id {Common 17-55} -new_severity INFO`
 
-Q: Can I use Python with Vivado?
-A: Yes! Use Python to:
+### Q: Can I use Python with Vivado?
+Yes! Python integration enables:
+- Test vector generation
+- Results analysis
+- Automation scripts
 
-Generate test vectors.
-
-Parse simulation logs.
-Example:
-
-python
-
-# scripts/gen_tests.py
-
+Example test generator:
+```python
+# scripts/python/gen_tests.py
 import random
-with open("tb/inputs.txt", "w") as f:
-f.write(f"{random.randint(0, 255)}\n")
-🚀 Pro Tips
-Version Control: Use Git + .gitignore for Vivado-generated files.
 
-CI/CD: Run linting/tests with GitHub Actions.
+def generate_test_vectors(count=100):
+    with open("tb/vectors.txt", "w") as f:
+        for _ in range(count):
+            a = random.randint(0, 255)
+            b = random.randint(0, 255)
+            f.write(f"{a:08b} {b:08b}\n")
 
-📄 License: MIT
-🔗 Adapted from: [Your Name]
+if __name__ == "__main__":
+    generate_test_vectors()
+```
 
----
+## 🚀 Pro Tips
 
-### How to Use This Document
+1. Version Control
+   - Use `.gitignore` for Vivado files
+   - Commit constraints & TCL scripts
+   - Regular backups of project state
 
-1. Save as `README.md` in your project root.
-2. Customize the example project for your needs.
-3. Update FAQs as you encounter new issues.
+2. CI/CD Integration
+   - Automate with GitHub Actions
+   - Run linting & simulation tests
+   - Generate documentation
 
-Let me know if you'd like to add/remove sections!
+3. Best Practices
+   - Use SystemVerilog assertions
+   - Implement error checking
+   - Follow coding guidelines
+
+## 📄 License
+MIT License
